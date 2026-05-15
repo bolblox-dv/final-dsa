@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC 103 — DSA Final Exam Mock Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e3a5f;
+    --accent: #1d7aff;
+    --accent2: #00d4ff;
+    --correct: #00e676;
+    --wrong: #ff4d6d;
+    --text: #e8f0fe;
+    --muted: #6b82a8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(29,122,255,0.04) 1px,transparent 1px), linear-gradient(90deg,rgba(29,122,255,0.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+  .container { max-width:860px; margin:0 auto; padding:40px 20px 80px; position:relative; z-index:1; }
+
+  header { text-align:center; margin-bottom:48px; }
+  .badge { display:inline-block; background:linear-gradient(135deg,#1d7aff22,#00d4ff22); border:1px solid var(--accent); color:var(--accent2); font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; padding:6px 16px; border-radius:2px; margin-bottom:16px; text-transform:uppercase; }
+  h1 { font-size:clamp(28px,5vw,48px); font-weight:800; background:linear-gradient(135deg,#ffffff 0%,#00d4ff 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.1; margin-bottom:12px; }
+  .subtitle { color:var(--muted); font-size:14px; font-family:'Space Mono',monospace; }
+
+  .progress-wrap { margin-bottom:32px; display:flex; align-items:center; gap:16px; }
+  .progress-bar { flex:1; height:4px; background:var(--surface2); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .progress-text { font-family:'Space Mono',monospace; font-size:12px; color:var(--muted); white-space:nowrap; }
+
+  .question-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:32px; margin-bottom:16px; position:relative; overflow:hidden; animation:slideIn 0.35s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+  .question-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+
+  .context-box { background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--accent2); border-radius:8px; padding:16px 18px; margin-bottom:20px; font-family:'Space Mono',monospace; font-size:12.5px; line-height:1.9; color:#b8d4f0; }
+  .ctx-label { font-size:10px; letter-spacing:2px; color:var(--accent2); text-transform:uppercase; margin-bottom:8px; display:block; font-weight:700; }
+  .ctx-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
+  .ctx-table th { background:rgba(29,122,255,0.15); color:var(--accent2); padding:6px 8px; text-align:center; border:1px solid var(--border); font-size:11px; letter-spacing:1px; }
+  .ctx-table td { padding:6px 8px; text-align:center; border:1px solid var(--border); color:var(--text); }
+  .ctx-table td.occ { color:var(--accent2); font-weight:700; }
+  .ctx-table td.emp { color:#3a4a6a; }
+
+  .q-meta { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .q-num { font-family:'Space Mono',monospace; font-size:11px; color:var(--accent2); letter-spacing:2px; }
+  .q-topic { font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:3px 10px; border-radius:20px; letter-spacing:1px; text-transform:uppercase; }
+  .q-text { font-size:16px; font-weight:600; line-height:1.6; margin-bottom:24px; color:var(--text); }
+
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option { display:flex; align-items:flex-start; gap:12px; padding:13px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.18s ease; user-select:none; }
+  .option:hover:not(.disabled) { border-color:var(--accent); background:rgba(29,122,255,0.08); }
+  .option.selected { border-color:var(--accent); background:rgba(29,122,255,0.12); }
+  .option.correct { border-color:var(--correct); background:rgba(0,230,118,0.08); }
+  .option.wrong { border-color:var(--wrong); background:rgba(255,77,109,0.08); }
+  .opt-letter { font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:var(--accent2); min-width:22px; height:22px; border:1px solid var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; transition:all 0.18s; }
+  .option.selected .opt-letter { border-color:var(--accent); background:var(--accent); color:#fff; }
+  .option.correct .opt-letter { border-color:var(--correct); background:var(--correct); color:#000; }
+  .option.wrong .opt-letter { border-color:var(--wrong); background:var(--wrong); color:#fff; }
+  .opt-text { font-size:14px; line-height:1.5; padding-top:1px; font-family:'Space Mono',monospace; }
+
+  .fill-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 18px; color:var(--text); font-family:'Space Mono',monospace; font-size:15px; outline:none; transition:border 0.18s; }
+  .fill-input:focus { border-color:var(--accent); }
+  .fill-input.correct { border-color:var(--correct); background:rgba(0,230,118,0.08); }
+  .fill-input.wrong { border-color:var(--wrong); background:rgba(255,77,109,0.08); }
+  .fill-hint { margin-top:8px; font-family:'Space Mono',monospace; font-size:13px; color:var(--correct); }
+
+  .explanation { margin-top:16px; padding:14px 18px; background:rgba(0,212,255,0.05); border:1px solid rgba(0,212,255,0.2); border-radius:8px; font-size:13px; line-height:1.7; color:var(--accent2); display:none; font-family:'Space Mono',monospace; }
+  .explanation.show { display:block; animation:fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .explanation strong { color:#fff; }
+
+  .btn-row { display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
+  .btn { font-family:'Syne',sans-serif; font-weight:700; font-size:14px; letter-spacing:1px; padding:12px 28px; border-radius:6px; border:none; cursor:pointer; transition:all 0.18s; text-transform:uppercase; }
+  .btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
+  .btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
+  .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--muted); color:var(--text); }
+
+  #score-screen { display:none; text-align:center; animation:slideIn 0.4s ease; }
+  .score-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:48px 32px; position:relative; overflow:hidden; }
+  .score-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent2),var(--correct)); }
+  .score-big { font-size:clamp(64px,15vw,96px); font-weight:800; font-family:'Space Mono',monospace; line-height:1; margin-bottom:8px; background:linear-gradient(135deg,#fff 0%,var(--accent2) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .score-label { color:var(--muted); font-size:14px; letter-spacing:2px; margin-bottom:24px; text-transform:uppercase; font-family:'Space Mono',monospace; }
+  .score-grade { font-size:40px; margin-bottom:8px; }
+  .score-msg { font-size:18px; font-weight:700; margin-bottom:32px; }
+  .score-breakdown { display:flex; justify-content:center; gap:40px; margin-bottom:40px; flex-wrap:wrap; }
+  .breakdown-item { text-align:center; }
+  .breakdown-num { font-size:28px; font-weight:800; font-family:'Space Mono',monospace; }
+  .breakdown-num.c { color:var(--correct); }
+  .breakdown-num.w { color:var(--wrong); }
+  .breakdown-lbl { font-size:12px; color:var(--muted); letter-spacing:1px; margin-top:2px; text-transform:uppercase; }
+
+  #review-section { display:none; margin-top:32px; }
+  .review-title { font-size:20px; font-weight:700; margin-bottom:20px; color:var(--accent2); font-family:'Space Mono',monospace; }
+  .review-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px 24px; margin-bottom:12px; }
+  .review-item.r-correct { border-left:3px solid var(--correct); }
+  .review-item.r-wrong { border-left:3px solid var(--wrong); }
+  .review-q { font-size:14px; font-weight:600; margin-bottom:8px; }
+  .review-answer { font-family:'Space Mono',monospace; font-size:12px; line-height:1.6; }
+  .review-answer .your { color:var(--wrong); }
+  .review-answer .corr { color:var(--correct); }
+
+  .start-info { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:32px 0 40px; }
+  .info-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px 12px; text-align:center; }
+  .info-num { font-size:28px; font-weight:800; font-family:'Space Mono',monospace; color:var(--accent2); margin-bottom:4px; }
+  .info-lbl { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .topics-list { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:36px; }
+  .topic-tag { font-size:12px; padding:6px 14px; border-radius:20px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); }
+
+  #quiz-screen { display:none; }
+  .disabled { pointer-events:none; }
+
+  @media(max-width:500px){ .start-info{grid-template-columns:repeat(2,1fr);} .question-card{padding:20px;} }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="badge">CC 103 · Data Structures & Algorithms</div>
+  <h1>Final Exam<br>Mock Test</h1>
+  <p class="subtitle">// stack · queue · trees · sorting · hashing</p>
+</header>
+
+<div id="start-screen" style="text-align:center">
+  <div class="start-info">
+    <div class="info-box"><div class="info-num">30</div><div class="info-lbl">Questions</div></div>
+    <div class="info-box"><div class="info-num">5</div><div class="info-lbl">Topics</div></div>
+    <div class="info-box"><div class="info-num">~25</div><div class="info-lbl">Minutes</div></div>
+  </div>
+  <div class="topics-list">
+    <span class="topic-tag">🥞 Stack (LIFO)</span>
+    <span class="topic-tag">🔄 Circular Queue</span>
+    <span class="topic-tag">🌳 BST / Trees</span>
+    <span class="topic-tag">🫧 Bubble Sort</span>
+    <span class="topic-tag">#️⃣ Hashing</span>
+  </div>
+  <button class="btn btn-primary" onclick="startQuiz()" style="font-size:16px;padding:16px 48px;">Start Test →</button>
+</div>
+
+<div id="quiz-screen">
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="progress-text" id="prog-text">0 / 30</div>
+  </div>
+  <div id="question-area"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-check" onclick="checkAnswer()" disabled>Check Answer</button>
+    <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" style="display:none">Next →</button>
+    <button class="btn btn-ghost" onclick="skipQuestion()">Skip</button>
+  </div>
+</div>
+
+<div id="score-screen">
+  <div class="score-card">
+    <div class="score-big" id="sc-pct">0%</div>
+    <div class="score-label">Final Score</div>
+    <div class="score-grade" id="sc-grade">🎉</div>
+    <div class="score-msg" id="sc-msg"></div>
+    <div class="score-breakdown">
+      <div class="breakdown-item"><div class="breakdown-num c" id="sc-correct">0</div><div class="breakdown-lbl">Correct</div></div>
+      <div class="breakdown-item"><div class="breakdown-num w" id="sc-wrong">0</div><div class="breakdown-lbl">Wrong</div></div>
+      <div class="breakdown-item"><div class="breakdown-num" id="sc-skip" style="color:var(--muted)">0</div><div class="breakdown-lbl">Skipped</div></div>
+    </div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-primary" onclick="retryQuiz()">↺ Retry</button>
+      <button class="btn btn-ghost" onclick="toggleReview()">📋 Review Answers</button>
+    </div>
+  </div>
+  <div id="review-section">
+    <div class="review-title">// answer review</div>
+    <div id="review-list"></div>
+  </div>
+</div>
+
+</div>
+<script>
+const Q=[
+// ── STACK ──────────────────────────────────────────────────────────────────
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Scenario: Empty stack. Operations performed in order:</span>
+Push(gly) → Push(glyds) → Peek() → Size() → Push(glydel) → Peek() → Pop() → Size()`,
+q:'After Push(gly) then Push(glyds), what does <b>Peek()</b> return?',
+opts:['gly','glyds','glydel','Nothing — stack is empty'],
+ans:1,
+exp:'<strong>glyds</strong> — Peek() returns the TOP element without removing it. glyds was pushed last, so it is on top.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Scenario: Empty stack. Operations performed in order:</span>
+Push(gly) → Push(glyds) → Peek() → Size() → Push(glydel) → Peek() → Pop() → Size()`,
+q:'After Push(gly) and Push(glyds), what does <b>Size()</b> return?',
+opts:['0','1','2','3'],
+ans:2,
+exp:'<strong>2</strong> — Two elements are in the stack: gly (bottom) and glyds (top). Size() = 2.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Scenario: Empty stack. Operations performed in order:</span>
+Push(gly) → Push(glyds) → Peek() → Size() → Push(glydel) → Peek() → Pop() → Size()`,
+q:'After Push(gly), Push(glyds), Push(glydel) — what does <b>Peek()</b> return?',
+opts:['gly','glyds','glydel','Empty'],
+ans:2,
+exp:'<strong>glydel</strong> — glydel was pushed last, so it sits on top. Peek() always returns the top element.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Scenario: Empty stack. Operations performed in order:</span>
+Push(gly) → Push(glyds) → Push(glydel) → Pop()`,
+q:'Which element does <b>Pop()</b> remove?',
+opts:['gly','glyds','glydel','All three'],
+ans:2,
+exp:'<strong>glydel</strong> — LIFO = Last In, First Out. glydel was pushed last, so it is removed first by Pop().'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Stack state after Pop() removed glydel:</span>
+New stack (bottom → top): gly, glyds`,
+q:'What does <b>Size()</b> return now?',
+opts:['0','1','2','3'],
+ans:2,
+exp:'<strong>2</strong> — Only gly and glyds remain after glydel was popped. Size() = 2.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Stack operations on numbers (initially empty):</span>
+Push(1) → Push(2) → Peek() → Size() → Push(3) → Peek() → Pop() → New stack → Size()`,
+q:'After Push(1) and Push(2), what does <b>Peek()</b> return?',
+opts:['1','2','3','0'],
+ans:1,
+exp:'<strong>2</strong> — Stack is [1(bottom), 2(top)]. Peek() returns 2 because it\'s on top.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Stack operations on numbers:</span>
+After Push(1), Push(2) → Size() = 2
+Then Push(3) → Stack: [1, 2, 3]`,
+q:'After pushing 1, 2, and 3, what does <b>Peek()</b> return?',
+opts:['1','2','3','Undefined'],
+ans:2,
+exp:'<strong>3</strong> — 3 was pushed last, so it is at the top. Peek() = 3.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Stack operations on numbers:</span>
+Stack: [1, 2, 3] → Pop() is called → New stack: [1, 2] → Size()`,
+q:'Pop() removes element <b>3</b>. What does <b>Size()</b> return after this?',
+opts:['1','2','3','0'],
+ans:1,
+exp:'<strong>2</strong> — After removing 3, the stack has 1 and 2. Size() = 2.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Browser "Recently Opened Tabs" — LIFO simulation:</span>
+1. Push(Google)   → Stack: [Google]
+2. Push(Youtube)  → Stack: [Google, Youtube]
+3. Peek()         → Returns: Youtube
+4. Push(Facebook) → Stack: [Google, Youtube, Facebook]
+5. Pop()          → Removes: Facebook
+6. Push(Gmail)    → Stack: [Google, Youtube, Gmail]
+7. Size()         → ?`,
+q:'What does <b>Size()</b> return at step 7?',
+opts:['2','3','4','1'],
+ans:1,
+exp:'<strong>3</strong> — Stack has Google, Youtube, Gmail = 3 elements. Facebook was popped at step 5.'},
+
+{topic:'Stack',type:'mc',
+ctx:`<span class="ctx-label">Continuing from the browser tab simulation:</span>
+Stack after step 7: [Google(bottom), Youtube, Gmail(top)]
+8. Pop()   → Removes Gmail
+9. Peek()  → Returns ?
+10. N (Size) → ?`,
+q:'After Pop() removes Gmail, what does <b>Peek()</b> return at step 9?',
+opts:['Google','Gmail','Youtube','Facebook'],
+ans:2,
+exp:'<strong>Youtube</strong> — Gmail (top) is removed. The new top is Youtube.'},
+
+// ── CIRCULAR QUEUE ─────────────────────────────────────────────────────────
+{topic:'Circular Queue',type:'mc',
+ctx:`<span class="ctx-label">Circular queue — START is at H, going clockwise:</span>
+H → I → J → A → B → C → D → E → F → G
+<table class="ctx-table">
+<tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+<tr><td class="occ">H</td><td class="occ">I</td><td class="occ">J</td><td class="occ">A</td><td class="occ">B</td><td class="occ">C</td><td class="occ">D</td><td class="occ">E</td><td class="occ">F</td><td class="occ">G</td></tr>
+</table>`,
+q:'What value is at <b>index 2</b>?',
+opts:['H','I','J','A'],
+ans:2,
+exp:'<strong>J</strong> — H is at index 0 (START), I at 1, J at 2. Indexing goes clockwise from START.'},
+
+{topic:'Circular Queue',type:'mc',
+ctx:`<span class="ctx-label">Circular queue — START is at H, going clockwise:</span>
+<table class="ctx-table">
+<tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+<tr><td class="occ">H</td><td class="occ">I</td><td class="occ">J</td><td class="occ">A</td><td class="occ">B</td><td class="occ">C</td><td class="occ">D</td><td class="occ">E</td><td class="occ">F</td><td class="occ">G</td></tr>
+</table>`,
+q:'What value is at <b>index 5</b>?',
+opts:['B','C','D','E'],
+ans:1,
+exp:'<strong>C</strong> — Counting from H(0): H,I,J,A,B,C → index 5 = C.'},
+
+{topic:'Circular Queue',type:'mc',
+ctx:`<span class="ctx-label">Second circular queue — START is at C (right side), going clockwise:</span>
+C(START) → I → C → S → A → L → G → N → L → M → back to C
+<table class="ctx-table">
+<tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+<tr><td class="occ">C</td><td class="occ">S</td><td class="occ">A</td><td class="occ">L</td><td class="occ">N</td><td class="occ">G</td><td class="occ">L</td><td class="occ">M</td><td class="occ">C</td><td class="occ">I</td></tr>
+</table>`,
+q:'In this queue (START = C on the right side), what is at <b>index 3</b>?',
+opts:['A','N','L','G'],
+ans:2,
+exp:'<strong>L</strong> — From the array: C(0), S(1), A(2), L(3). Index 3 = L.'},
+
+{topic:'Circular Queue',type:'mc',
+ctx:'',
+q:'In a circular queue, indexing begins at the <b>START</b> position and continues in which direction?',
+opts:['Counter-clockwise','Clockwise','Randomly','From the center outward'],
+ans:1,
+exp:'<strong>Clockwise</strong> — As shown in class, the circular queue\'s START position is index 0, and elements are indexed going clockwise around the circle.'},
+
+// ── BST / TREES ────────────────────────────────────────────────────────────
+{topic:'BST / Trees',type:'mc',
+ctx:`<span class="ctx-label">Binary Search Tree (BST):</span>
+         11  ← root
+        /    \\
+       4      18
+      / \\    /
+     2   8  10
+
+BST Rules: Left child &lt; Parent &lt; Right child`,
+q:'Where would you insert value <b>19</b>?',
+opts:['Left child of 11','Left child of 18','Right child of 18','Right child of 10'],
+ans:2,
+exp:'<strong>Right child of 18.</strong> 19 > 11 → go right to 18. 19 > 18 → go right. Empty → insert as right child of 18.'},
+
+{topic:'BST / Trees',type:'mc',
+ctx:`<span class="ctx-label">BST after inserting 19:</span>
+         11
+        /    \\
+       4      18
+      / \\    /  \\
+     2   8  10   19`,
+q:'Where would you insert value <b>12</b>?',
+opts:['Left child of 10','Right child of 10','Left child of 18','Right child of 11'],
+ans:1,
+exp:'<strong>Right child of 10.</strong> 12 > 11 → right. 12 < 18 → left. 12 > 10 → right of 10. Empty → insert here.'},
+
+{topic:'BST / Trees',type:'mc',
+ctx:`<span class="ctx-label">Deleting a node with TWO children in a BST:</span>
+Inorder Predecessor = highest value in the LEFT subtree
+Inorder Successor   = lowest value in the RIGHT subtree
+
+BST:    11
+       /    \\
+      4      18
+     / \\    /  \\
+    2   8  10   19`,
+q:'To delete node <b>11</b> (root) using the Inorder Successor, which value replaces it?',
+opts:['8','10','4','18'],
+ans:1,
+exp:'<strong>10</strong> — The Inorder Successor is the LOWEST value in the RIGHT subtree. Right subtree has 18 and 10. Lowest = 10. So 10 moves up to replace 11.'},
+
+{topic:'BST / Trees',type:'mc',
+ctx:`<span class="ctx-label">Tree level structure:</span>
+Root (A) → Level 0
+Children of A (B, C) → Level 1
+Children of B and C → Level 2
+Children of those → Level 3`,
+q:'In a BST with root 11, node 4 is its left child, and node 2 is left child of 4. What <b>level</b> is node 2 on?',
+opts:['Level 0','Level 1','Level 2','Level 3'],
+ans:2,
+exp:'<strong>Level 2.</strong> Root 11 = Level 0. Its child 4 = Level 1. Child of 4 which is 2 = Level 2.'},
+
+{topic:'BST / Trees',type:'mc',
+ctx:`<span class="ctx-label">Tree terminology from class:</span>
+• Root — special node at the top
+• Parent Node — a node above the child node
+• Child Node — a node under a parent node
+• Leaf Node — a node without any children
+• Subtree — a portion of a tree that itself forms a valid tree
+• Siblings — nodes that share the same parent`,
+q:'A node with <b>no children</b> is called a ___.',
+opts:['Root node','Sibling node','Leaf node','Parent node'],
+ans:2,
+exp:'<strong>Leaf node</strong> — A leaf node is defined as a node without any children. It is always at the bottom of a branch.'},
+
+{topic:'BST / Trees',type:'fill',
+ctx:`<span class="ctx-label">BST Deletion rule:</span>
+When deleting a node using the Inorder Predecessor:
+→ Find the HIGHEST value in the LEFT subtree to replace it.
+
+When deleting using the Inorder Successor:
+→ Find the LOWEST value in the RIGHT subtree to replace it.`,
+q:'The Inorder Predecessor comes from the ___ subtree (type: left or right).',
+ans:'left',
+exp:'<strong>left</strong> — The Inorder Predecessor is the highest value in the LEFT subtree. The Inorder Successor is the lowest in the RIGHT subtree.'},
+
+// ── BUBBLE SORT ────────────────────────────────────────────────────────────
+{topic:'Bubble Sort',type:'mc',
+ctx:`<span class="ctx-label">Starting array: [15, 34, 28, 36, 12]</span>
+Step 1: Compare 15 & 34 → 34 > 15 → already in order → NO swap → [15, 34, 28, 36, 12]
+Step 2: Compare 34 & 28 → 34 > 28 → out of order → SWAP → [15, 28, 34, 36, 12]
+Step 3: Compare 34 & 36 → ?`,
+q:'At Step 3, 34 is compared with 36. What happens?',
+opts:['34 > 36 → swap → [15,28,36,34,12]','34 < 36 → already in order → NO swap','34 = 36 → no action needed','36 gets moved to the front'],
+ans:1,
+exp:'<strong>No swap.</strong> 34 < 36, so they are already in the correct sorted order. Array stays [15, 28, 34, 36, 12].'},
+
+{topic:'Bubble Sort',type:'mc',
+ctx:`<span class="ctx-label">Continuing Bubble Sort on [15, 34, 28, 36, 12]:</span>
+After Steps 1–3, array is: [15, 28, 34, 36, 12]
+Step 4: Compare 36 & 12`,
+q:'What happens when 36 is compared with 12?',
+opts:['36 < 12 → no swap','12 > 36 → no swap','36 > 12 → SWAP → [15, 28, 34, 12, 36]','They are equal → skip'],
+ans:2,
+exp:'<strong>SWAP!</strong> 36 > 12, so they are out of order. After swap: [15, 28, 34, 12, 36]. The largest value 36 has "bubbled" to the end.'},
+
+{topic:'Bubble Sort',type:'mc',
+ctx:`<span class="ctx-label">Array after each pass of Bubble Sort on [15, 34, 28, 36, 12]:</span>
+Original: [15, 34, 28, 36, 12]
+Pass 1:   [15, 28, 34, 12, 36]  ← 36 is now in final position
+Pass 2:   [15, 28, 12, 34, 36]  ← 34 is now in final position
+Pass 3:   [15, 12, 28, 34, 36]  ← 28 is in final position`,
+q:'What is the <b>completely sorted</b> final array?',
+opts:['[12, 28, 15, 34, 36]','[12, 15, 28, 34, 36]','[15, 12, 28, 34, 36]','[12, 15, 34, 28, 36]'],
+ans:1,
+exp:'<strong>[12, 15, 28, 34, 36]</strong> — After Pass 3 we have [15, 12, 28, 34, 36]. One final pass swaps 15 and 12 → fully sorted.'},
+
+{topic:'Bubble Sort',type:'fill',
+ctx:`<span class="ctx-label">Key Bubble Sort observation from class:</span>
+"Notice that after each iteration, at least one value moves to its FINAL position at the END."
+Starting array: [15, 34, 28, 36, 12]
+After Pass 1:   [15, 28, 34, 12, 36]`,
+q:'Which value reached its final sorted position after Pass 1? (type the number)',
+ans:'36',
+exp:'<strong>36</strong> — The largest element always "bubbles up" to the end in one pass. After Pass 1, 36 is in its correct final position.'},
+
+// ── HASHING ────────────────────────────────────────────────────────────────
+{topic:'Hashing',type:'mc',
+ctx:`<span class="ctx-label">Hash function: index = k % 10 (linear probing for collisions)</span>
+Keys to insert in order: 110, 93, 81, 55, 89
+Calculations:
+  110 % 10 = 0 → index 0
+  93 % 10  = 3 → index 3
+  81 % 10  = 1 → index 1
+  55 % 10  = 5 → index 5
+  89 % 10  = 9 → index 9`,
+q:'Using hash function k % 10, what index does key <b>93</b> go to?',
+opts:['Index 9','Index 0','Index 3','Index 1'],
+ans:2,
+exp:'<strong>Index 3.</strong> 93 % 10 = 3. Simple modulo: remainder of 93 ÷ 10 = 3.'},
+
+{topic:'Hashing',type:'mc',
+ctx:`<span class="ctx-label">Final hash table after inserting 110, 93, 81, 55, 89:</span>
+<table class="ctx-table">
+<tr><th>[0]</th><th>[1]</th><th>[2]</th><th>[3]</th><th>[4]</th><th>[5]</th><th>[6]</th><th>[7]</th><th>[8]</th><th>[9]</th></tr>
+<tr><td class="occ">110</td><td class="occ">81</td><td class="emp">—</td><td class="occ">93</td><td class="emp">—</td><td class="occ">55</td><td class="emp">—</td><td class="emp">—</td><td class="emp">—</td><td class="occ">89</td></tr>
+</table>`,
+q:'Looking at the final table, which key is at <b>index 1</b>?',
+opts:['110','93','81','55'],
+ans:2,
+exp:'<strong>81</strong> — 81 % 10 = 1. Index 1 was empty, so 81 goes directly there. No collision.'},
+
+{topic:'Hashing',type:'mc',
+ctx:`<span class="ctx-label">String hashing — ASCII sum method:</span>
+Lowercase ASCII: a=97, b=98, c=99, d=100, e=101, f=102 ... o=111 ... s=115, t=116
+
+Step 1: Sum the ASCII values of each character in the string
+Step 2: Apply hash function → index = sum % 10
+
+coe:  c(99) + o(111) + e(101) = 311 → 311 % 10 = 1 → index 1
+cas:  c(99) + a(97)  + s(115) = 311 → 311 % 10 = 1 → index 1 ← COLLISION!`,
+q:'"coe" is inserted first at index 1. Where does "cas" go using <b>linear probing</b>?',
+opts:['Index 0 (wrap around)','Index 1 (overwrite coe)','Index 2 (next empty slot)','Index 9'],
+ans:2,
+exp:'<strong>Index 2.</strong> Index 1 is occupied by coe. Linear probing: check index 2 → empty → place cas at index 2.'},
+
+{topic:'Hashing',type:'mc',
+ctx:`<span class="ctx-label">All string insertions: cics, cet, cafad, coe, cas</span>
+cics:  c(99)+i(105)+c(99)+s(115) = 418 → 418%10 = 8
+cet:   c(99)+e(101)+t(116)       = 316 → 316%10 = 6
+cafad: c(99)+a(97)+f(102)+a(97)+d(100) = 495 → 495%10 = 5
+coe:   311 % 10 = 1
+cas:   311 % 10 = 1 → collision → goes to index 2
+
+<table class="ctx-table">
+<tr><th>[0]</th><th>[1]</th><th>[2]</th><th>[3]</th><th>[4]</th><th>[5]</th><th>[6]</th><th>[7]</th><th>[8]</th><th>[9]</th></tr>
+<tr><td class="emp">—</td><td class="occ">coe</td><td class="occ">cas</td><td class="emp">—</td><td class="emp">—</td><td class="occ">cafad</td><td class="occ">cet</td><td class="emp">—</td><td class="occ">cics</td><td class="emp">—</td></tr>
+</table>`,
+q:'Which string is at <b>index 8</b> in the final hash table?',
+opts:['cet','cafad','coe','cics'],
+ans:3,
+exp:'<strong>cics</strong> — cics has ASCII sum 418. 418 % 10 = 8. Index 8 was empty, so cics is placed directly there.'},
+
+{topic:'Hashing',type:'fill',
+ctx:`<span class="ctx-label">ASCII sum calculation for "cafad":</span>
+c = 99
+a = 97
+f = 102
+a = 97
+d = 100`,
+q:'What is the total ASCII sum of "cafad"? (add all 5 values)',
+ans:'495',
+exp:'<strong>495</strong> — 99 + 97 + 102 + 97 + 100 = 495. Then 495 % 10 = 5, so cafad goes to index 5.'},
+
+];
+
+// ── ENGINE ──────────────────────────────────────────────────────────────────
+let qList=[],cur=0,score=0,uAns=[],answered=false,selOpt=null;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+function startQuiz(){
+  qList=shuffle([...Q]); cur=0; score=0; uAns=[]; answered=false; selOpt=null;
+  document.getElementById('start-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  document.getElementById('score-screen').style.display='none';
+  renderQ();
+}
+
+function renderQ(){
+  answered=false; selOpt=null;
+  const q=qList[cur];
+  updateProg();
+  const L=['A','B','C','D'];
+  let body='';
+  if(q.type==='mc'){
+    body=`<div class="options">`+q.opts.map((o,i)=>`
+      <div class="option" id="o${i}" onclick="pick(${i})">
+        <div class="opt-letter">${L[i]}</div>
+        <div class="opt-text">${o}</div>
+      </div>`).join('')+`</div>`;
+  } else {
+    body=`<input class="fill-input" id="fi" placeholder="Type your answer..." oninput="fchg()" onkeydown="if(event.key==='Enter')checkAnswer()">`;
+  }
+  const ctx=q.ctx?`<div class="context-box">${q.ctx}</div>`:'';
+  document.getElementById('question-area').innerHTML=`
+    <div class="question-card">
+      <div class="q-meta">
+        <div class="q-num">Q${String(cur+1).padStart(2,'0')}</div>
+        <div class="q-topic">${q.topic}</div>
+        ${q.type==='fill'?'<div class="q-topic" style="color:var(--accent2);border-color:var(--accent)">Fill in</div>':''}
+      </div>
+      ${ctx}
+      <div class="q-text">${q.q}</div>
+      ${body}
+      <div class="explanation" id="exp">${q.exp}</div>
+    </div>`;
+  document.getElementById('btn-check').disabled=true;
+  document.getElementById('btn-check').style.display='inline-block';
+  document.getElementById('btn-next').style.display='none';
+  if(q.type==='fill') setTimeout(()=>document.getElementById('fi')?.focus(),100);
+}
+
+function pick(i){
+  if(answered)return; selOpt=i;
+  document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('o'+i).classList.add('selected');
+  document.getElementById('btn-check').disabled=false;
+}
+
+function fchg(){
+  document.getElementById('btn-check').disabled=document.getElementById('fi').value.trim().length===0;
+}
+
+function checkAnswer(){
+  if(answered)return; answered=true;
+  const q=qList[cur]; let ok=false,ua='';
+  if(q.type==='mc'){
+    if(selOpt===null)return;
+    ok=selOpt===q.ans; ua=q.opts[selOpt];
+    document.querySelectorAll('.option').forEach((el,i)=>{
+      el.classList.add('disabled');
+      if(i===q.ans)el.classList.add('correct');
+      else if(i===selOpt&&!ok)el.classList.add('wrong');
+    });
+  } else {
+    const inp=document.getElementById('fi');
+    ok=inp.value.trim().toLowerCase()===q.ans.toLowerCase(); ua=inp.value.trim();
+    inp.classList.add(ok?'correct':'wrong'); inp.disabled=true;
+    if(!ok){const h=document.createElement('div');h.className='fill-hint';h.textContent='✓ Correct: '+q.ans;inp.parentNode.insertBefore(h,inp.nextSibling);}
+  }
+  if(ok)score++;
+  uAns.push({q:q.q,topic:q.topic,ok,ua,ca:q.type==='mc'?q.opts[q.ans]:q.ans,skip:false});
+  document.getElementById('exp').classList.add('show');
+  document.getElementById('btn-check').style.display='none';
+  document.getElementById('btn-next').style.display='inline-block';
+  document.getElementById('btn-next').textContent=cur<qList.length-1?'Next →':'See Results →';
+}
+
+function skipQuestion(){
+  if(answered)return;
+  const q=qList[cur];
+  uAns.push({q:q.q,topic:q.topic,ok:false,ua:'(skipped)',ca:q.type==='mc'?q.opts[q.ans]:q.ans,skip:true});
+  nextQuestion();
+}
+
+function nextQuestion(){ cur++; cur>=qList.length?showScore():renderQ(); }
+
+function updateProg(){
+  const p=(cur/qList.length)*100;
+  document.getElementById('prog-fill').style.width=p+'%';
+  document.getElementById('prog-text').textContent=`${cur} / ${qList.length}`;
+}
+
+function showScore(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('score-screen').style.display='block';
+  document.getElementById('review-section').style.display='none';
+  const t=qList.length,p=Math.round((score/t)*100);
+  const w=uAns.filter(a=>!a.ok&&!a.skip).length,s=uAns.filter(a=>a.skip).length;
+  document.getElementById('sc-pct').textContent=p+'%';
+  document.getElementById('sc-correct').textContent=score;
+  document.getElementById('sc-wrong').textContent=w;
+  document.getElementById('sc-skip').textContent=s;
+  const msgs=p>=90?['🏆','Outstanding! Exam-ready!']:p>=80?['🌟','Great job! Almost perfect!']:p>=70?['✅','Good work! Review a few topics.']:p>=60?['📚','Keep going — you\'re getting there!']:['💪','More practice needed. You got this!'];
+  document.getElementById('sc-grade').textContent=msgs[0];
+  document.getElementById('sc-msg').textContent=msgs[1];
+}
+
+function toggleReview(){
+  const sec=document.getElementById('review-section'),list=document.getElementById('review-list');
+  if(sec.style.display==='block'){sec.style.display='none';return;}
+  list.innerHTML=uAns.map((a,i)=>`
+    <div class="review-item ${a.ok?'r-correct':'r-wrong'}">
+      <div class="q-meta" style="margin-bottom:6px">
+        <div class="q-num">Q${String(i+1).padStart(2,'0')}</div>
+        <div class="q-topic">${a.topic}</div>
+        <div style="margin-left:auto;font-size:12px">${a.ok?'✅ Correct':a.skip?'⏭ Skipped':'❌ Wrong'}</div>
+      </div>
+      <div class="review-q">${a.q}</div>
+      <div class="review-answer">
+        ${!a.ok?`<div class="your">Your answer: ${a.ua}</div><div class="corr">Correct: ${a.ca}</div>`:`<div style="color:var(--correct)">Your answer: ${a.ua} ✓</div>`}
+      </div>
+    </div>`).join('');
+  sec.style.display='block';
+  sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function retryQuiz(){
+  document.getElementById('score-screen').style.display='none';
+  document.getElementById('start-screen').style.display='block';
+}
+</script>
+</body>
+</html>
